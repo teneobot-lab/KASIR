@@ -1,44 +1,73 @@
-# [Project name]
+# Sistem Kasir Enterprise
 
-_Replace the heading above with the project's name, and this line with one sentence describing what this app does for users._
+Full-stack enterprise POS (Point of Sale) system untuk bisnis retail, restoran, dan franchise di Indonesia.
 
 ## Run & Operate
 
-- `pnpm --filter @workspace/api-server run dev` — run the API server (port 5000)
-- `pnpm run typecheck` — full typecheck across all packages
-- `pnpm run build` — typecheck + build all packages
-- `pnpm --filter @workspace/api-spec run codegen` — regenerate API hooks and Zod schemas from the OpenAPI spec
+- `pnpm --filter @workspace/api-server run dev` — jalankan API server (port 8080)
+- `pnpm --filter @workspace/kasir run dev` — jalankan frontend (port 22227)
+- `pnpm run typecheck` — full typecheck seluruh package
+- `pnpm run build` — typecheck + build semua package
+- `pnpm --filter @workspace/api-spec run codegen` — regenerate API hooks dan Zod schemas dari OpenAPI spec
 - `pnpm --filter @workspace/db run push` — push DB schema changes (dev only)
-- Required env: `DATABASE_URL` — Postgres connection string
+- `pnpm --filter @workspace/scripts run seed` — re-seed database dengan demo data
+- Required env: `DATABASE_URL` — Postgres connection string, `SESSION_SECRET` — secret untuk session
 
 ## Stack
 
 - pnpm workspaces, Node.js 24, TypeScript 5.9
-- API: Express 5
+- Frontend: React 18 + Vite, shadcn/ui, wouter (routing), Recharts (charts), TanStack Query
+- API: Express 5, pino (logging)
 - DB: PostgreSQL + Drizzle ORM
 - Validation: Zod (`zod/v4`), `drizzle-zod`
-- API codegen: Orval (from OpenAPI spec)
+- API codegen: Orval (dari OpenAPI spec)
 - Build: esbuild (CJS bundle)
 
 ## Where things live
 
-_Populate as you build — short repo map plus pointers to the source-of-truth file for DB schema, API contracts, theme files, etc._
+- `artifacts/kasir/src/pages/` — semua halaman frontend (17+ halaman)
+- `artifacts/kasir/src/App.tsx` — routing untuk semua halaman
+- `artifacts/kasir/src/lib/auth.tsx` — auth context/provider
+- `artifacts/api-server/src/routes/` — semua route handler API
+- `artifacts/api-server/src/routes/transactions.ts` — logika transaksi POS utama
+- `artifacts/api-server/src/routes/reports.ts` — dashboard + analytics endpoints
+- `lib/db/src/schema/` — 9 schema files (users, categories, suppliers, products, customers, shifts, transactions, stock_movements, discounts)
+- `lib/api-spec/openapi.yaml` — source of truth untuk API contract
+- `lib/api-client-react/src/` — generated hooks + setAuthTokenGetter
 
 ## Architecture decisions
 
-_Populate as you build — non-obvious choices a reader couldn't infer from the code (3-5 bullets)._
+- **Auth via base64 token**: Token sederhana berisi `{id, role, iat}` encoded base64. Password di-hash dengan bcrypt. Token disimpan di `localStorage` key `kasir_token`.
+- **Contract-first API**: OpenAPI spec di `lib/api-spec/openapi.yaml` → Orval generate React Query hooks dan Zod schemas. Server dan client keduanya menggunakan generated types.
+- **Numeric fields as strings in Drizzle**: Drizzle menyimpan `numeric` column sebagai string. Gunakan `String(val)` saat insert, `Number(field)` saat read.
+- **Routes tanpa /api prefix di handler**: Prefix `/api` ditambahkan oleh `app.use("/api", router)` di `app.ts`. Handler menulis `/products`, bukan `/api/products`.
+- **Shared proxy routing**: Semua traffic melalui proxy di port 80. API di `/api`, frontend di `/`. Jangan gunakan Vite proxy config.
 
 ## Product
 
-_Describe the high-level user-facing capabilities of this app once they exist._
+- **Login multi-role**: super_admin, admin, kasir (cashier), supervisor, gudang (warehouse)
+- **Dashboard**: revenue hari ini, jumlah transaksi, produk stok rendah, grafik penjualan
+- **POS (Kasir)**: scan/pilih produk, cart, diskon, pembayaran tunai/kartu/e-wallet, cetak struk
+- **Produk & Kategori**: CRUD produk + kategori, upload gambar, multi-satuan
+- **Inventori**: level stok, riwayat pergerakan stok, alert stok rendah
+- **Pelanggan**: profil pelanggan, tier membership, riwayat transaksi
+- **Diskon & Promo**: persentase dan nominal, kode promo, min. pembelian
+- **Supplier**: manajemen supplier
+- **Shift**: buka/tutup shift kasir, ringkasan per shift
+- **Laporan**: laporan penjualan, produk terlaris, laporan pelanggan
+- **Manajemen User**: CRUD user, pengaturan role
 
 ## User preferences
 
-_Populate as you build — explicit user instructions worth remembering across sessions._
+- Bahasa Indonesia untuk UI dan komunikasi
+- Demo accounts: admin/admin123 (super_admin), cashier1/cashier123
 
 ## Gotchas
 
-_Populate as you build — sharp edges, "always run X before Y" rules._
+- Selalu rebuild API server setelah perubahan: `pnpm --filter @workspace/api-server run build`
+- Setelah push schema baru, jalankan seed ulang: `pnpm --filter @workspace/scripts run seed`
+- API routes tidak boleh menggunakan prefix `/api` (sudah ditambahkan di app.ts)
+- `useGetLowStockAlerts()` dan hook inventory mengembalikan array langsung, bukan `{ data: [] }`
 
 ## Pointers
 
