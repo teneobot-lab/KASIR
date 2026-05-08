@@ -1,8 +1,11 @@
 import { Router, type IRouter } from "express";
 import { db, productsTable, stockMovementsTable } from "@workspace/db";
 import { eq, desc } from "drizzle-orm";
+import { requireAuth, requireRole, ADMIN_ROLES, MANAGER_ROLES, ALL_STAFF } from "../middlewares/auth";
+import { asyncHandler } from "../middlewares/errorHandler";
 
 const router: IRouter = Router();
+router.use(requireAuth);
 
 router.get("/inventory", async (req, res): Promise<void> => {
   const { lowStock, search } = req.query as { lowStock?: string; search?: string };

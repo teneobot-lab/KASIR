@@ -23,6 +23,7 @@ import Suppliers from "@/pages/suppliers";
 import Reports from "@/pages/reports";
 import Users from "@/pages/users";
 import Settings from "@/pages/settings";
+import HR from "@/pages/hr";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -65,6 +66,7 @@ function App() {
             <Route path="/suppliers">{() => <ProtectedRoute component={Suppliers} />}</Route>
             <Route path="/reports">{() => <ProtectedRoute component={Reports} />}</Route>
             <Route path="/users">{() => <ProtectedRoute component={Users} />}</Route>
+            <Route path="/hr">{() => <ProtectedRoute component={HR} />}</Route>
             <Route path="/settings">{() => <ProtectedRoute component={Settings} />}</Route>
             <Route component={NotFound} />
           </Switch>

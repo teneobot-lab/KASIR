@@ -10,6 +10,7 @@ import customersRouter from "./customers";
 import shiftsRouter from "./shifts";
 import transactionsRouter from "./transactions";
 import reportsRouter from "./reports";
+import hrRouter from './hr';
 import discountsRouter from "./discounts";
 
 const router: IRouter = Router();
@@ -26,5 +27,6 @@ router.use(shiftsRouter);
 router.use(transactionsRouter);
 router.use(reportsRouter);
 router.use(discountsRouter);
+router.use('/hr', hrRouter);
 
 export default router;

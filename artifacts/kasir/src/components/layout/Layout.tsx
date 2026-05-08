@@ -17,7 +17,7 @@ import {
   LogOut,
   Store
 } from "lucide-react";
-import { Settings as SettingsIcon } from "lucide-react";
+import { Settings as SettingsIcon, Briefcase } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 const navItems = [
@@ -34,6 +34,7 @@ const navItems = [
   { href: "/suppliers", label: "Suppliers", icon: Truck },
   { href: "/reports", label: "Reports", icon: BarChart3 },
   { href: "/users", label: "Users", icon: UserCog },
+  { href: "/hr", label: "HR & Karyawan", icon: Briefcase },
   { href: "/settings", label: "Pengaturan", icon: SettingsIcon },
 ];
 

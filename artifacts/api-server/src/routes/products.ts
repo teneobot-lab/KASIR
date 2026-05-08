@@ -1,8 +1,11 @@
 import { Router, type IRouter } from "express";
 import { db, productsTable, categoriesTable } from "@workspace/db";
 import { eq, ilike, and, sql } from "drizzle-orm";
+import { requireAuth, requireRole, CASHIER_ROLES, MANAGER_ROLES, ADMIN_ROLES, ALL_STAFF } from "../middlewares/auth";
+import { asyncHandler } from "../middlewares/errorHandler";
 
 const router: IRouter = Router();
+router.use(requireAuth);
 
 function toApi(p: typeof productsTable.$inferSelect, categoryName?: string | null) {
   return {
