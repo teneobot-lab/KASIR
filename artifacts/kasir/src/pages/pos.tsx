@@ -15,6 +15,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
+import { ReceiptPrint } from "@/components/ReceiptPrint";
 import {
   Search, ShoppingCart, Loader2, Plus, Minus, Trash2,
   Tag, User, CreditCard, Banknote, CheckCircle2, AlertTriangle,
@@ -41,6 +42,7 @@ export default function Pos() {
   const [showSuccessDialog, setShowSuccessDialog] = useState(false);
   const [lastReceipt, setLastReceipt] = useState<string>("");
   const [lastChange, setLastChange] = useState(0);
+  const [lastTx, setLastTx] = useState<any>(null);
 
   const { data: productsData, isLoading: loadingProducts } = useListProducts({ search: search || undefined, limit: 60, isActive: true } as any);
   const { data: customersData } = useListCustomers({ limit: 200 } as any);
@@ -99,6 +101,7 @@ export default function Pos() {
       onSuccess: (res: any) => {
         setLastReceipt(res?.receiptNumber ?? "");
         setLastChange(change);
+        setLastTx(res);
         queryClient.invalidateQueries({ queryKey: getListTransactionsQueryKey({}) });
         setShowPayDialog(false);
         setShowSuccessDialog(true);
@@ -281,19 +284,77 @@ export default function Pos() {
       </Dialog>
 
       <Dialog open={showSuccessDialog} onOpenChange={setShowSuccessDialog}>
-        <DialogContent className="max-w-sm text-center">
-          <div className="flex flex-col items-center gap-3 py-4">
-            <CheckCircle2 className="h-16 w-16 text-green-500" />
-            <h2 className="text-xl font-bold">Transaksi Berhasil!</h2>
-            {lastReceipt && <p className="text-sm text-muted-foreground">No. Struk: <span className="font-mono font-bold">{lastReceipt}</span></p>}
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2 text-green-600">
+              <CheckCircle2 className="h-5 w-5" /> Transaksi Berhasil!
+            </DialogTitle>
+          </DialogHeader>
+          <div className="space-y-3">
+            {lastReceipt && (
+              <div className="text-center text-sm text-muted-foreground">
+                No. Struk: <span className="font-mono font-bold text-foreground">{lastReceipt}</span>
+              </div>
+            )}
             {paymentMethod === "cash" && lastChange > 0 && (
-              <div className="bg-green-50 border border-green-200 rounded-lg px-6 py-3">
-                <div className="text-sm text-green-700">Kembalian</div>
-                <div className="text-2xl font-bold text-green-700">{fmt(lastChange)}</div>
+              <div className="flex justify-between items-center bg-green-50 border border-green-200 rounded-lg px-4 py-3">
+                <span className="text-green-700 font-medium">Kembalian</span>
+                <span className="text-xl font-bold text-green-700">{fmt(lastChange)}</span>
+              </div>
+            )}
+            {lastTx && (
+              <div className="border rounded-lg p-3 bg-muted/30 text-xs font-mono space-y-1 max-h-48 overflow-y-auto">
+                <div className="text-center font-bold text-sm mb-2">
+                  {JSON.parse(localStorage.getItem("kasir_store_settings") || "{}").name || "Kasir Enterprise"}
+                </div>
+                <div className="flex justify-between"><span>No. Struk</span><span>{lastTx.receiptNumber}</span></div>
+                <div className="flex justify-between"><span>Kasir</span><span>{lastTx.cashierName}</span></div>
+                {lastTx.customerName && <div className="flex justify-between"><span>Pelanggan</span><span>{lastTx.customerName}</span></div>}
+                <div className="border-t border-dashed my-1" />
+                {lastTx.items?.map((item: any, i: number) => (
+                  <div key={i}>
+                    <div className="font-bold">{item.productName}</div>
+                    <div className="flex justify-between pl-2">
+                      <span>{item.quantity} x Rp {fmt(item.price)}</span>
+                      <span>Rp {fmt(item.subtotal)}</span>
+                    </div>
+                  </div>
+                ))}
+                <div className="border-t border-dashed my-1" />
+                <div className="flex justify-between"><span>Subtotal</span><span>Rp {fmt(lastTx.subtotal ?? lastTx.total)}</span></div>
+                {lastTx.discountAmount > 0 && <div className="flex justify-between"><span>Diskon</span><span>-Rp {fmt(lastTx.discountAmount)}</span></div>}
+                <div className="flex justify-between"><span>Pajak</span><span>Rp {fmt(lastTx.taxAmount)}</span></div>
+                <div className="flex justify-between font-bold text-sm border-t pt-1"><span>TOTAL</span><span>Rp {fmt(lastTx.total)}</span></div>
+                <div className="flex justify-between"><span>Bayar</span><span>Rp {fmt(lastTx.paidAmount)}</span></div>
+                {lastChange > 0 && <div className="flex justify-between"><span>Kembali</span><span>Rp {fmt(lastChange)}</span></div>}
+                <div className="border-t border-dashed my-1" />
+                <div className="text-center">Terima kasih!</div>
               </div>
             )}
           </div>
-          <DialogFooter><Button className="w-full" onClick={() => setShowSuccessDialog(false)}>Transaksi Baru</Button></DialogFooter>
+          <DialogFooter className="flex gap-2">
+            {lastTx && (
+              <ReceiptPrint
+                tx={{
+                  receiptNumber: lastTx.receiptNumber,
+                  createdAt: lastTx.createdAt,
+                  cashierName: lastTx.cashierName,
+                  customerName: lastTx.customerName,
+                  items: lastTx.items ?? [],
+                  discountAmount: lastTx.discountAmount ?? 0,
+                  taxAmount: lastTx.taxAmount ?? 0,
+                  total: lastTx.total,
+                  paidAmount: lastTx.paidAmount,
+                  changeAmount: lastChange,
+                  paymentMethod: paymentMethod,
+                  note: lastTx.note,
+                }}
+                storeName={JSON.parse(localStorage.getItem("kasir_store_settings") || "{}").name || "Kasir Enterprise"}
+                storeAddress={JSON.parse(localStorage.getItem("kasir_store_settings") || "{}").address || ""}
+              />
+            )}
+            <Button className="flex-1" onClick={() => setShowSuccessDialog(false)}>Transaksi Baru</Button>
+          </DialogFooter>
         </DialogContent>
       </Dialog>
     </div>
