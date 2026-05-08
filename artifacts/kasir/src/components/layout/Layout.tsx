@@ -1,4 +1,4 @@
-import { Settings as SettingsIcon, Link, useLocation } from "wouter";
+import { Link, useLocation } from "wouter";
 import { useAuth } from "@/lib/auth";
 import { 
   LayoutDashboard, 
@@ -17,6 +17,7 @@ import {
   LogOut,
   Store
 } from "lucide-react";
+import { Settings as SettingsIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 const navItems = [
