@@ -1,4 +1,4 @@
-import { Link, useLocation } from "wouter";
+import { Settings as SettingsIcon, Link, useLocation } from "wouter";
 import { useAuth } from "@/lib/auth";
 import { 
   LayoutDashboard, 
@@ -33,6 +33,7 @@ const navItems = [
   { href: "/suppliers", label: "Suppliers", icon: Truck },
   { href: "/reports", label: "Reports", icon: BarChart3 },
   { href: "/users", label: "Users", icon: UserCog },
+  { href: "/settings", label: "Pengaturan", icon: SettingsIcon },
 ];
 
 export function Layout({ children }: { children: React.ReactNode }) {

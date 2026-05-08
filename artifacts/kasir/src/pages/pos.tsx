@@ -238,6 +238,21 @@ export default function Pos() {
                 ))}
               </div>
             </div>
+            {paymentMethod === "qris" && (() => {
+              const qrisUrl = JSON.parse(localStorage.getItem("kasir_store_settings") || "{}").qrisImageUrl;
+              return qrisUrl ? (
+                <div className="flex flex-col items-center gap-2 border rounded-xl p-4 bg-muted/20">
+                  <img src={qrisUrl} alt="QRIS" className="max-w-[180px] max-h-[180px] object-contain" />
+                  <div className="text-xs text-muted-foreground text-center">Scan QR di atas untuk membayar</div>
+                  <div className="text-sm font-bold text-primary">Total: {fmt(total)}</div>
+                </div>
+              ) : (
+                <div className="text-center text-sm text-muted-foreground border rounded-xl p-4">
+                  QRIS belum disetup.<br/>
+                  <a href="/settings" className="text-primary underline">Atur QRIS di Pengaturan</a>
+                </div>
+              );
+            })()}
             {paymentMethod === "cash" && (
               <div className="space-y-1.5">
                 <Label className="text-xs">Uang Diterima</Label>

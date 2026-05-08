@@ -7,6 +7,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { format } from "date-fns";
 import { ArrowLeft, Printer, Ban, ReceiptText } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { ReceiptPrint } from "@/components/ReceiptPrint";
 import { useQueryClient } from "@tanstack/react-query";
 
 export default function TransactionDetail() {
@@ -164,9 +165,30 @@ export default function TransactionDetail() {
               )}
             </CardContent>
             <CardFooter className="flex flex-col gap-2">
-              <Button className="w-full" variant="outline">
-                <Printer className="w-4 h-4 mr-2" /> Print Receipt
-              </Button>
+              <ReceiptPrint
+                tx={{
+                  receiptNumber: tx.receiptNumber,
+                  createdAt: tx.createdAt,
+                  cashierName: tx.cashierName,
+                  customerName: tx.customerName,
+                  items: tx.items.map((i: any) => ({
+                    productName: i.productName,
+                    quantity: i.quantity,
+                    price: i.price,
+                    discount: i.discount,
+                    subtotal: i.subtotal,
+                  })),
+                  discountAmount: tx.discountAmount,
+                  taxAmount: tx.taxAmount,
+                  total: tx.total,
+                  paidAmount: tx.paidAmount,
+                  changeAmount: tx.changeAmount,
+                  paymentMethod: tx.payments?.[0]?.method,
+                  note: tx.note,
+                }}
+                storeName={JSON.parse(localStorage.getItem("kasir_store_settings") || "{}").name || "Kasir Enterprise"}
+                storeAddress={JSON.parse(localStorage.getItem("kasir_store_settings") || "{}").address || ""}
+              />
               {tx.status === 'completed' && (
                 <Button className="w-full text-destructive hover:text-destructive hover:bg-destructive/10" variant="ghost" onClick={handleVoid} disabled={voidMutation.isPending}>
                   <Ban className="w-4 h-4 mr-2" /> Void Transaction
