@@ -43,8 +43,9 @@ export default function Inventory() {
       }
     }, {
       onSuccess: () => {
-        queryClient.invalidateQueries({ queryKey: getListInventoryQueryKey() });
-        queryClient.invalidateQueries({ queryKey: getListStockMovementsQueryKey() });
+        queryClient.invalidateQueries({ queryKey: getListInventoryQueryKey({ search: "" }) });
+        queryClient.invalidateQueries({ queryKey: ["inventory"] });
+        queryClient.invalidateQueries({ queryKey: ["stock-movements"] });
         setIsDialogOpen(false);
         setMovementForm({ productId: "", type: "adjustment", quantity: "", note: "" });
         toast({ title: "Stock movement recorded" });
