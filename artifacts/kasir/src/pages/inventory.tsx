@@ -14,8 +14,8 @@ import { format } from "date-fns";
 
 export default function Inventory() {
   const [searchTerm, setSearchTerm] = useState("");
-  const { data: inventoryData, isLoading: isLoadingInventory } = useListInventory({ search: searchTerm });
-  const { data: movementsData, isLoading: isLoadingMovements } = useListStockMovements({ limit: 50 } as any);
+  const { data: inventoryData, isLoading: isLoadingInventory, refetch: refetchInventory } = useListInventory({ search: searchTerm });
+  const { data: movementsData, isLoading: isLoadingMovements, refetch: refetchMovements } = useListStockMovements({ limit: 50 } as any);
   const createMovement = useCreateStockMovement();
   const queryClient = useQueryClient();
   const { toast } = useToast();
@@ -43,7 +43,8 @@ export default function Inventory() {
       }
     }, {
       onSuccess: () => {
-        queryClient.invalidateQueries();
+        refetchInventory();
+        refetchMovements();
         setIsDialogOpen(false);
         setMovementForm({ productId: "", type: "adjustment", quantity: "", note: "" });
         toast({ title: "Stock movement recorded" });
