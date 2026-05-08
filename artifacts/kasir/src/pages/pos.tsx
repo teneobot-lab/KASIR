@@ -90,7 +90,6 @@ export default function Pos() {
   const handleCharge = () => {
     if (cart.length === 0) return;
     if (!activeShift) { toast({ title: "Shift belum dibuka!", variant: "destructive" }); return; }
-    if (paymentMethod === "cash" && cashPaidNum < total) { toast({ title: "Uang bayar kurang", variant: "destructive" }); return; }
     setShowPayDialog(true);
   };
 
